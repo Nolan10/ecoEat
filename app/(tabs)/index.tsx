@@ -1,7 +1,8 @@
 import ProductCard from '@/src/components/ProductCard';
 import { Product, products } from '@/src/data/products';
 import React from 'react';
-import { FlatList, SafeAreaView } from 'react-native';
+import { FlatList } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function HomeScreen() {
   const renderItem = ({ item }: { item: Product }) => (
