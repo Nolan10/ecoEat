@@ -1,15 +1,17 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity } from 'react-native';
 import { colors } from '../theme/colors';
 
 interface ProductCardProps {
+  id: string;
   name: string;
   price: number;
   expiryDate: string;
   wasteRisk: 'low' | 'medium' | 'high';
+  onPress?: () => void;
 }
 
-const ProductCard: React.FC<ProductCardProps> = ({ name, price, expiryDate, wasteRisk }) => {
+const ProductCard: React.FC<ProductCardProps> = ({ id, name, price, expiryDate, wasteRisk, onPress }) => {
   const riskColor = {
     low: colors.success,
     medium: colors.warning,
@@ -17,11 +19,15 @@ const ProductCard: React.FC<ProductCardProps> = ({ name, price, expiryDate, wast
   }[wasteRisk] || colors.gray;
 
   return (
-    <View style={[styles.card, { borderLeftColor: riskColor, borderLeftWidth: 4 }]}>
+    <TouchableOpacity
+      style={[styles.card, { borderLeftColor: riskColor, borderLeftWidth: 4 }]}
+      activeOpacity={0.7}
+      onPress={onPress ?? (() => console.log('Pressed product id:', id))}
+    >
       <Text style={styles.name}>{name}</Text>
       <Text style={styles.price}>{price}€</Text>
       <Text style={styles.expiry}>Expire: {expiryDate}</Text>
-    </View>
+    </TouchableOpacity>
   );
 };
 
