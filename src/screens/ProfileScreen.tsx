@@ -1,10 +1,12 @@
+import { useAppContext } from '@/src/context/AppContext';
+import { products } from '@/src/data/products';
 import { colors } from '@/src/theme/colors';
 import React from 'react';
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function ProfileScreen() {
+  const { favorites } = useAppContext();
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView>
@@ -23,13 +25,13 @@ export default function ProfileScreen() {
         {/* Statistics Section */}
         <View style={styles.statsSection}>
           <View style={styles.statItem}>
-            <Text style={styles.statValue}>24</Text>
+            <Text style={styles.statValue}>{products.length}</Text>
             <Text style={styles.statLabel}>Produits</Text>
           </View>
           <View style={styles.statDivider} />
           <View style={styles.statItem}>
-            <Text style={styles.statValue}>12</Text>
-            <Text style={styles.statLabel}>Dons</Text>
+            <Text style={styles.statValue}>{favorites.length}</Text>
+            <Text style={styles.statLabel}>Favoris</Text>
           </View>
           <View style={styles.statDivider} />
           <View style={styles.statItem}>
@@ -37,6 +39,25 @@ export default function ProfileScreen() {
             <Text style={styles.statLabel}>Économisé</Text>
           </View>
         </View>
+
+        {/* Favorites Section (optional) */}
+        {favorites.length > 0 && (
+          <View style={styles.favoritesSection}>
+            <Text style={styles.favoritesSectionTitle}>Mes Favoris</Text>
+            {favorites.slice(0, 5).map((id) => {
+              const product = products.find((p) => p.id === id);
+              return product ? (
+                <View key={id} style={styles.favoriteItem}>
+                  <Text style={styles.favoriteItemName}>{product.name}</Text>
+                  <Text style={styles.favoriteItemPrice}>{product.price.toFixed(2)}€</Text>
+                </View>
+              ) : null;
+            })}
+            {favorites.length > 5 && (
+              <Text style={styles.favoritesMore}>+ {favorites.length - 5} autre(s)</Text>
+            )}
+          </View>
+        )}
 
         {/* Menu Section */}
         <View style={styles.menuSection}>
@@ -177,5 +198,38 @@ const styles = StyleSheet.create({
     color: '#E74C3C',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  favoritesSection: {
+    backgroundColor: 'white',
+    padding: 20,
+    marginBottom: 20,
+  },
+  favoritesSectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#2C3E50',
+    marginBottom: 12,
+  },
+  favoriteItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+  },
+  favoriteItemName: {
+    fontSize: 14,
+    color: '#2C3E50',
+  },
+  favoriteItemPrice: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.primary || '#27AE60',
+  },
+  favoritesMore: {
+    marginTop: 8,
+    fontSize: 12,
+    color: '#7F8C8D',
+    fontStyle: 'italic',
   },
 });
