@@ -63,17 +63,37 @@ eas build --platform android --profile production
 - [ ] `eas.json` contient le profil `production` et build lancé (`eas build --platform android --profile production`).
 - [ ] Lien du build EAS récupéré et fourni.
 
-## Captures à fournir
-1. Authentification : Login ou Register avec champs remplis + message succès/erreur.
-2. Navigation conditionnelle :
-   - Accès à Products sans connexion (public).
-   - Redirection vers Login en tentant `Donations` sans connexion (protégé).
-3. Lien de build EAS de production (URL expo.dev/artifacts …).
+## 1. Captures d'écran Essentielles
 
-### Emplacements captures (ajoutez vos images ou liens)
-- Authentification : 
-- Navigation publique/protégée : 
-- Lien build EAS : 
+### 1.1 Code Technique
+- **C1 : firebase.ts (getAuth + db)**
+![alt text](image.png)
+
+- **C2 : authService (register/login/logout)**
+![alt text](image-1.png)
+![alt text](image-2.png)
+![alt text](image-3.png)
+
+- **C3 : AuthContext (Provider + onAuthStateChanged)**
+![alt text](image-4.png)
+
+- **C4 : app/_layout.tsx (navigation conditionnelle)**
+![alt text](image-5.png)
+
+### 1.2 Interface Utilisateur
+- **I1 : Login ou Register avec message succès/erreur**
+![alt text](image-8.png)
+![alt text](image-9.png)
+
+- **I2 : Accès Products sans connexion (public)**
+![alt text](image-7.png)
+
+- **I3 : Redirection vers Login en tentant Donations sans connexion**
+![alt text](image-6.png)
+
+### 1.3 Build EAS
+- **Lien build production (expo.dev / artifacts)**
+   - URL : `https://expo.dev/artifacts/eas/cctsnSdDfjmpVe9pArXi8W.aab`
 
 ## Questions de validation (répondre dans le dépôt ou rendu)
 - Q1 – Auth Firebase vs auth custom : différences et avantages sécurité (hash bcrypt, tokens gérés, protections brute-force, HTTPS, validation).
