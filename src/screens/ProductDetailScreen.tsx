@@ -1,15 +1,27 @@
-import { products } from '@/src/data/products';
+import { useProducts } from '@/src/hooks/useProducts';
 import { colors } from '@/src/theme/colors';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function ProductDetailScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
+  const { products, loading } = useProducts();
 
   const product = products.find((p) => p.id === id);
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.errorContainer}>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={styles.loadingText}>Chargement...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   if (!product) {
     return (
@@ -47,9 +59,9 @@ export default function ProductDetailScreen() {
 
         <View style={styles.content}>
           <Text style={styles.productName}>{product.name}</Text>
-          
+
           <View style={styles.priceContainer}>
-            <Text style={styles.price}>{product.price.toFixed(2)}€</Text>
+            <Text style={styles.price}>{product.isDonation ? 'Gratuit' : product.price}</Text>
           </View>
 
           <View style={styles.detailsContainer}>
@@ -152,5 +164,10 @@ const styles = StyleSheet.create({
     color: '#E74C3C',
     marginBottom: 20,
     fontWeight: '600',
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: '#7F8C8D',
   },
 });

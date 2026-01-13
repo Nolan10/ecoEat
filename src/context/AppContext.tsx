@@ -1,13 +1,13 @@
-import React, {
-  createContext,
-  PropsWithChildren,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react';
 import { loadFavorites, saveFavorites } from '@/src/services/storage';
+import React, {
+	createContext,
+	PropsWithChildren,
+	useCallback,
+	useContext,
+	useEffect,
+	useMemo,
+	useState,
+} from 'react';
 
 export interface AppContextType {
 	favorites: string[];
@@ -27,7 +27,9 @@ export function AppProvider({ children }: PropsWithChildren) {
 		const initFavorites = async () => {
 			try {
 				const storedFavorites = await loadFavorites();
-				setFavorites(storedFavorites);
+				// Filtrer les anciens IDs mock (ex: "1", "2") pour ne garder que les IDs Firebase (longs)
+				const validFavorites = storedFavorites.filter(id => id.length > 5);
+				setFavorites(validFavorites);
 			} catch (error) {
 				console.error('Failed to load favorites:', error);
 			} finally {

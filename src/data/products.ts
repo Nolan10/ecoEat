@@ -5,6 +5,7 @@ export interface Product {
   price: number;
   expiryDate: string;
   wasteRisk: 'low' | 'medium' | 'high';
+  isDonation?: boolean; // Champ pour marquer comme don
 }
 
 export const products: Product[] = [

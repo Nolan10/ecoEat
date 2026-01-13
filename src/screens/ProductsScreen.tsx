@@ -1,18 +1,33 @@
 import ProductCard from '@/src/components/ProductCard';
-import { Product, products } from '@/src/data/products';
+import type { Product } from '@/src/services/productsService';
+import { useProducts } from '@/src/hooks/useProducts';
 import { useRouter } from 'expo-router';
-import React from 'react';
-import { FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import React, { useCallback } from 'react';
+import { FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View, ActivityIndicator } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSearch, WasteRisk, SortBy } from '@/src/hooks/useSearch';
 import { colors } from '@/src/theme/colors';
 
 export default function ProductsScreen() {
   const router = useRouter();
+  const { products, loading, error, refetch } = useProducts();
   const { searchQuery, setSearchQuery, selectedRisk, setSelectedRisk, sortBy, setSortBy, filteredProducts } = useSearch(products);
 
+  // Rafraîchir les produits quand l'écran devient visible
+  useFocusEffect(
+    useCallback(() => {
+      refetch();
+    }, [refetch])
+  );
+
   const renderItem = ({ item }: { item: Product }) => (
-    <ProductCard {...item} id={item.id} onPress={() => router.push({ pathname: '/product/[id]', params: { id: item.id } })} />
+    <ProductCard 
+      {...item} 
+      id={item.id} 
+      isDonation={item.isDonation} 
+      onPress={() => router.push({ pathname: '/product/[id]', params: { id: item.id } })} 
+    />
   );
 
   const riskFilters: { label: string; value: WasteRisk | null }[] = [
@@ -92,22 +107,40 @@ export default function ProductsScreen() {
         </View>
       </View>
 
-      <FlatList
-        data={filteredProducts}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id.toString()}
-        ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyTitle}>Aucun produit trouvé</Text>
-            <Text style={styles.emptySubtitle}>
-              {searchQuery || selectedRisk
-                ? 'Essayez de modifier vos critères de recherche.'
-                : 'Ajoutez des produits pour les voir ici.'}
-            </Text>
-          </View>
-        }
-        contentContainerStyle={filteredProducts.length === 0 ? styles.emptyListContent : undefined}
-      />
+      {/* Loading indicator */}
+      {loading && (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={styles.loadingText}>Chargement des produits...</Text>
+        </View>
+      )}
+
+      {/* Error display */}
+      {error && (
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>❌ Erreur: {error}</Text>
+        </View>
+      )}
+
+      {/* Product list */}
+      {!loading && !error && (
+        <FlatList
+          data={filteredProducts}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.id.toString()}
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyTitle}>Aucun produit trouvé</Text>
+              <Text style={styles.emptySubtitle}>
+                {searchQuery || selectedRisk
+                  ? 'Essayez de modifier vos critères de recherche.'
+                  : 'Ajoutez des produits pour les voir ici.'}
+              </Text>
+            </View>
+          }
+          contentContainerStyle={filteredProducts.length === 0 ? styles.emptyListContent : undefined}
+        />
+      )}
     </SafeAreaView>
   );
 }
@@ -190,6 +223,30 @@ const styles = StyleSheet.create({
   },
   sortButtonTextActive: {
     color: 'white',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: '#7F8C8D',
+  },
+  errorContainer: {
+    margin: 16,
+    padding: 16,
+    backgroundColor: '#FFEBEE',
+    borderRadius: 8,
+    borderLeftWidth: 4,
+    borderLeftColor: '#E74C3C',
+  },
+  errorText: {
+    color: '#E74C3C',
+    fontSize: 14,
+    fontWeight: '500',
   },
   emptyListContent: {
     flexGrow: 1,

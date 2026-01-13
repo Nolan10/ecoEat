@@ -1,5 +1,5 @@
 import { useAppContext } from '@/src/context/AppContext';
-import { products } from '@/src/data/products';
+import { useProducts } from '@/src/hooks/useProducts';
 import { colors } from '@/src/theme/colors';
 import React from 'react';
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function ProfileScreen() {
   const { favorites } = useAppContext();
+  const { products } = useProducts();
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView>
@@ -49,7 +50,7 @@ export default function ProfileScreen() {
               return product ? (
                 <View key={id} style={styles.favoriteItem}>
                   <Text style={styles.favoriteItemName}>{product.name}</Text>
-                  <Text style={styles.favoriteItemPrice}>{product.price.toFixed(2)}€</Text>
+                  <Text style={styles.favoriteItemPrice}>{product.price}</Text>
                 </View>
               ) : null;
             })}
@@ -65,17 +66,17 @@ export default function ProfileScreen() {
             <Text style={styles.menuText}>Mes produits</Text>
             <Text style={styles.menuArrow}>›</Text>
           </TouchableOpacity>
-          
+
           <TouchableOpacity style={styles.menuItem}>
             <Text style={styles.menuText}>Historique des dons</Text>
             <Text style={styles.menuArrow}>›</Text>
           </TouchableOpacity>
-          
+
           <TouchableOpacity style={styles.menuItem}>
             <Text style={styles.menuText}>Paramètres</Text>
             <Text style={styles.menuArrow}>›</Text>
           </TouchableOpacity>
-          
+
           <TouchableOpacity style={styles.menuItem}>
             <Text style={styles.menuText}>Aide et support</Text>
             <Text style={styles.menuArrow}>›</Text>
@@ -83,7 +84,7 @@ export default function ProfileScreen() {
         </View>
 
         {/* Logout Button */}
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.logoutButton}
           onPress={() => console.log('Déconnexion')}
         >

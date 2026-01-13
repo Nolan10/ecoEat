@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Product } from '@/src/data/products';
+import type { Product } from '@/src/services/productsService';
 
 export type WasteRisk = 'low' | 'medium' | 'high';
 export type SortBy = 'name' | 'price' | 'expiryDate' | 'risk' | null;
@@ -13,6 +13,14 @@ interface UseSearchResult {
   setSortBy: (sort: SortBy) => void;
   filteredProducts: Product[];
 }
+
+// Fonction utilitaire pour extraire le prix numérique d'une chaîne
+const extractPrice = (priceStr: string | number): number => {
+  if (typeof priceStr === 'number') return priceStr;
+  // Enlève le symbole € et convertit en nombre
+  const numericValue = parseFloat(priceStr.replace('€', '').replace(',', '.').trim());
+  return isNaN(numericValue) ? 0 : numericValue;
+};
 
 export function useSearch(products: Product[]): UseSearchResult {
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -42,7 +50,7 @@ export function useSearch(products: Product[]): UseSearchResult {
           case 'name':
             return a.name.localeCompare(b.name);
           case 'price':
-            return a.price - b.price;
+            return extractPrice(a.price) - extractPrice(b.price);
           case 'expiryDate':
             return new Date(a.expiryDate).getTime() - new Date(b.expiryDate).getTime();
           case 'risk': {
