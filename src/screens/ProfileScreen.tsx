@@ -1,13 +1,39 @@
 import { useAppContext } from '@/src/context/AppContext';
+import { useAuth } from '@/src/context/AuthContext';
 import { useProducts } from '@/src/hooks/useProducts';
+import { logout } from '@/src/services/authService';
 import { colors } from '@/src/theme/colors';
 import React from 'react';
-import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function ProfileScreen() {
   const { favorites } = useAppContext();
   const { products } = useProducts();
+  const { user } = useAuth();
+
+  const handleLogout = async () => {
+    Alert.alert(
+      'Déconnexion',
+      'Êtes-vous sûr de vouloir vous déconnecter ?',
+      [
+        { text: 'Annuler', style: 'cancel' },
+        {
+          text: 'Déconnexion',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await logout();
+            } catch (error) {
+              Alert.alert('Erreur', 'Impossible de se déconnecter');
+              console.error('Erreur déconnexion:', error);
+            }
+          },
+        },
+      ]
+    );
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView>
@@ -19,8 +45,8 @@ export default function ProfileScreen() {
             accessibilityLabel="Photo de profil"
             resizeMode="cover"
           />
-          <Text style={styles.name}>Nolan TESSIER</Text>
-          <Text style={styles.email}>nolan.tessier@example.com</Text>
+          <Text style={styles.name}>Utilisateur EcoEat</Text>
+          <Text style={styles.email}>{user?.email || 'Non connecté'}</Text>
         </View>
 
         {/* Statistics Section */}
@@ -86,7 +112,7 @@ export default function ProfileScreen() {
         {/* Logout Button */}
         <TouchableOpacity
           style={styles.logoutButton}
-          onPress={() => console.log('Déconnexion')}
+          onPress={handleLogout}
         >
           <Text style={styles.logoutText}>Déconnexion</Text>
         </TouchableOpacity>

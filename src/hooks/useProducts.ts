@@ -1,18 +1,20 @@
 // src/hooks/useProducts.ts
-import { useState, useEffect, useCallback } from 'react';
-import { 
-  fetchProducts,
-  fetchDonations,
-  createProduct as createProductService, 
-  updateProduct as updateProductService,
-  markProductAsDonation as markProductAsDonationService,
-  deleteProduct as deleteProductService 
-} from '@/src/services/productsService';
+import { useAuth } from '@/src/context/AuthContext';
 import type { Product, ProductRequest } from '@/src/services/productsService';
+import {
+  createProduct as createProductService,
+  deleteProduct as deleteProductService,
+  fetchDonations,
+  fetchProducts,
+  markProductAsDonation as markProductAsDonationService,
+  updateProduct as updateProductService
+} from '@/src/services/productsService';
+import { useCallback, useEffect, useState } from 'react';
 
-const TEMP_USER_ID = 'guest';
+
 
 export function useProducts() {
+  const { user } = useAuth();
   // États
   const [products, setProducts] = useState<Product[]>([]);
   const [donations, setDonations] = useState<Product[]>([]);
@@ -37,28 +39,37 @@ export function useProducts() {
 
   // Charger les produits en don
   const loadDonations = useCallback(async () => {
+    if (!user) {
+      setDonations([]);
+      return;
+    }
+
     try {
-      const fetchedDonations = await fetchDonations(TEMP_USER_ID);
+      const fetchedDonations = await fetchDonations(user.id);
       setDonations(fetchedDonations);
     } catch (err) {
       console.error('Error loading donations:', err);
       // Pas besoin de setError ici car c'est secondaire
     }
-  }, []);
+  }, [user]);
 
   // Créer un nouveau produit
   const createProduct = async (product: ProductRequest): Promise<Product> => {
+    if (!user) {
+      throw new Error('Vous devez être connecté pour créer un produit');
+    }
+
     try {
-      const newProduct = await createProductService(product);
-      
+      const newProduct = await createProductService(product, user.id);
+
       // Recharger les produits après création
       await loadProducts();
-      
+
       // Si c'est un don, recharger aussi les donations
       if (product.isDonation) {
         await loadDonations();
       }
-      
+
       return newProduct;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to create product';
@@ -71,10 +82,10 @@ export function useProducts() {
   const updateProduct = async (id: string, updates: Partial<ProductRequest>): Promise<void> => {
     try {
       await updateProductService(id, updates);
-      
+
       // Recharger les produits après modification
       await loadProducts();
-      
+
       // Si isDonation a changé, recharger les donations
       if (updates.isDonation !== undefined) {
         await loadDonations();
@@ -90,7 +101,7 @@ export function useProducts() {
   const markProductAsDonation = async (productId: string, isDonation: boolean = true): Promise<void> => {
     try {
       await markProductAsDonationService(productId, isDonation);
-      
+
       // Recharger products ET donations car le statut don a changé
       await Promise.all([loadProducts(), loadDonations()]);
     } catch (err) {
@@ -104,7 +115,7 @@ export function useProducts() {
   const deleteProduct = async (id: string): Promise<void> => {
     try {
       await deleteProductService(id);
-      
+
       // Recharger products ET donations après suppression
       await Promise.all([loadProducts(), loadDonations()]);
     } catch (err) {
@@ -122,11 +133,15 @@ export function useProducts() {
   // Charger les données au montage du composant
   useEffect(() => {
     loadProducts();
-    loadDonations();
-  }, [loadProducts, loadDonations]);
+    if (user) {
+      loadDonations();
+    } else {
+      setDonations([]);
+    }
+  }, [loadProducts, loadDonations, user]);
 
   // Interface retournée par le hook
-  return { 
+  return {
     products,
     donations,
     loading,

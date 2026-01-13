@@ -1,16 +1,16 @@
 // src/services/productsService.ts
-import { 
-  collection, 
-  doc, 
-  getDocs, 
+import {
   addDoc,
-  updateDoc,
+  collection,
   deleteDoc,
-  query, 
-  where, 
+  doc,
+  getDocs,
   orderBy,
+  query,
   serverTimestamp,
-  Timestamp 
+  Timestamp,
+  updateDoc,
+  where
 } from 'firebase/firestore';
 import { db } from './firebase';
 
@@ -38,17 +38,19 @@ export interface ProductRequest {
 }
 
 const PRODUCTS_COLLECTION = 'products';
-const TEMP_USER_ID = 'guest';
-
 // CREATE - Créer un produit
-export async function createProduct(product: ProductRequest): Promise<Product> {
+export async function createProduct(product: ProductRequest, userId: string): Promise<Product> {
+  if (!userId) {
+    throw new Error('User ID requis');
+  }
+
   try {
     // Si c'est un don, forcer le prix à "0€"
     const productData = {
       ...product,
       price: product.isDonation ? '0€' : product.price,
       isDonation: product.isDonation || false,
-      userId: TEMP_USER_ID,
+      userId: userId,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     };
@@ -63,7 +65,7 @@ export async function createProduct(product: ProductRequest): Promise<Product> {
       ...product,
       price: productData.price,
       isDonation: productData.isDonation,
-      userId: TEMP_USER_ID,
+      userId: userId,
     };
   } catch (error) {
     console.error('Error creating product:', error);
@@ -93,10 +95,14 @@ export async function fetchProducts(): Promise<Product[]> {
 }
 
 // READ - Récupérer uniquement les produits en don
-export async function fetchDonations(userId: string = TEMP_USER_ID): Promise<Product[]> {
+export async function fetchDonations(userId: string): Promise<Product[]> {
+  if (!userId) {
+    throw new Error('User ID requis');
+  }
+
   try {
     const productsRef = collection(db, PRODUCTS_COLLECTION);
-    
+
     // Query pour filtrer par userId et isDonation
     const donationsQuery = query(
       productsRef,
